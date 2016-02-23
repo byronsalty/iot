@@ -4,9 +4,9 @@
 unsigned rounds = 0;
 char publishString[40];
 
-int r_value = random(256);
-int g_value = random(256);
-int b_value = random(256);
+int r_new = 0;
+int g_new = 0;
+int b_new = 0;
 
 void setup() {
     // Initialize the LED pins as outputs
@@ -14,34 +14,20 @@ void setup() {
     pinMode(1, OUTPUT);
     pinMode(2, OUTPUT);
     
-    analogWrite(0, r_value);   // Turn the red LED off
-    analogWrite(1, g_value);   // Turn the green LED off
-    analogWrite(2, b_value);   // Turn the blue LED off
+    analogWrite(0, r_new);   // Turn the red LED off
+    analogWrite(1, g_new);   // Turn the green LED off
+    analogWrite(2, b_new);   // Turn the blue LED off
 
     //Particle.variable("rounds", rounds);
 }
 
-
- 
-void loop() {
-    int r_old = r_value;
-    int g_old = g_value;
-    int b_old = b_value;
-    r_value = random(256);
-    g_value = random(256);
-    b_value = random(256);
-    //sprintf(publishString, "old: %d", r_old);
-    //Particle.publish("old", publishString);
-    //sprintf(publishString, "new: %d", r_value);
-    //Particle.publish("new", publishString);
-
-    int duration = 2000;
-    float segments = 50.0;
+void blend(int r1, int g1, int b1, int r2, int g2, int b2, int duration, int intSegments) {
+    float segments = (float) intSegments;
     float subsegments = segments * 3.0;
     for (int i = 0; i < segments; i++) {
-      float tmp_r = ((((float)r_value - (float)r_old)/segments)*i) + (float)r_old;
-      float tmp_g = ((((float)g_value - (float)g_old)/segments)*i) + (float)g_old;
-      float tmp_b = ((((float)b_value - (float)b_old)/segments)*i) + (float)b_old;
+      float tmp_r = ((((float)r2 - (float)r1)/segments)*i) + (float)r1;
+      float tmp_g = ((((float)g2 - (float)g1)/segments)*i) + (float)g1;
+      float tmp_b = ((((float)b2 - (float)b2)/segments)*i) + (float)b2;
       analogWrite(0, tmp_r);
       delay(duration/subsegments);
       analogWrite(1, tmp_g);
@@ -49,10 +35,21 @@ void loop() {
       analogWrite(2, tmp_b);
       delay(duration/subsegments);
     }
-    
+}
 
-    //delay(1000);            // Wait for a second
-    //rounds = rounds + 1;
-    //sprintf(publishString, "%u", rounds);
-    //Particle.publish("round completed", publishString);
+
+ 
+void loop() {
+    int r_old = r_new;
+    int g_old = g_new;
+    int b_old = b_new;
+    r_new = random(256);
+    g_new = random(256);
+    b_new = random(256);
+
+    blend(r_old, g_old, b_old, r_new, g_new, b_new, 500, 50);
+    //sprintf(publishString, "old: %d", r_old);
+    //Particle.publish("old", publishString);
+    //sprintf(publishString, "new: %d", r_value);
+    //Particle.publish("new", publishString);
 }
